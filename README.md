@@ -281,3 +281,80 @@ docker network inspect <network-name>
 ---
 
 ## Session 3
+
+### 1️⃣ SonarQube
+
+![alt text](image-2.png)
+
+```bash
+docker run -d -p 9000:9000 -p 9092:9092 --name sonarqube-server sonarqube:community
+```
+
+### Sonar Scanner (Local)
+
+```bash
+sonnar-scanner -D"sonar.projectKey=example" -D"sonar.sources=." -D"sonar.host.url=http:localhost:9000" -D"sonar.login=<Token>"
+```
+
+### Sonar Scanner (Container)
+
+```bash
+docker run --rm -e SONAR_HOST_URL="http://localhost:9000" -e SONAR_LOGIN="<Token>" -v "${PWD}:/usr/src sonarsource/sonar-scanner/cli"
+```
+
+## Docker File
+
+### Create image using Dockerfile file
+
+```bash
+docker build --tag <image name>:<version> .
+docker build -t <image name>:<version> .
+```
+
+### Example of Dockerfile for apache server in Centos:7
+
+```bash
+
+FROM centos:7
+
+RUN yum -y update
+
+RUN yum -y install httpd
+
+ENV connection = "user:password@mysql-server:3306"
+
+COPY src /var/www/html
+
+
+CMD ["apachectl", "-D", "FOREGROUND"]
+```
+
+### Create image using a plain text file
+
+```bash
+docker build -t <image name>:<version> -f <path to file>/<filename> <path to file>
+```
+
+```bash
+docker build -t webapache:3.0 .
+```
+
+### Create image adding arguments
+
+```bash
+docker build -t <image name>:<version> . --build-arg <buil-arg>=<arg-value>
+```
+
+### Create node image adding environment variables
+
+```bash
+FROM node:alpine3.16
+
+WORKDIR /app
+
+ENV PORT=80
+
+COPY src ./src
+
+CMD ["node", "src/index.js"]
+```
