@@ -358,3 +358,133 @@ COPY src ./src
 
 CMD ["node", "src/index.js"]
 ```
+
+## Session 4
+
+### Multistage nginx
+
+```bash
+# 1er Stage: Build
+FROM node:lts-alpine as BUILD
+
+WORKDIR /build
+
+COPY app-sample/package.json .
+
+RUN npm install
+
+COPY app-sample .
+
+RUN npm run build --prod
+
+
+# 2do Stage: Runtime
+
+FROM nginx:1.21.3-alpine
+
+COPY --from=BUILD /build/dist/app-sample /usr/share/nginx/html
+
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### Multistage node
+
+```bash
+# 1er Stage: Build
+FROM node:lts-alpine as BUILD
+
+WORKDIR /build
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+# 2do Stage: Runtime
+
+FROM node:lts-alpine
+
+WORKDIR /app
+
+COPY --from=BUILD /build/package.json .
+
+COPY --from=BUILD /build/node_modules ./node_modules
+
+COPY --from=BUILD /build/cache ./cache
+
+CMD ["npm", "run", "start"]
+```
+
+### To remove stopped containers, networks without containeres, dangling images, dangling build cache
+
+```bash
+docker system prune
+```
+
+### To remove stopped containers, networks without containeres, images not connected to containers
+
+```bash
+docker system prune -a
+```
+
+### Docker Compose
+
+### To execute all services
+
+```bash
+docker compose up
+docker compose up -d
+```
+
+### To stop all services, delete containers and networks, no volumes
+
+```bash
+docker compose down
+```
+
+### To execute a docker compose file with different location and name
+
+```bash
+docker compose -f <path to yaml file> up -d
+docker compose -f config/docker-wordpress.yaml up -d
+```
+
+### Creation of Laravel ecosystem with docker
+
+![alt text](laravel-ecosystem.png)
+
+#### To execute only one service
+
+```bash
+docker compose run --rm <service-name>
+docker compose run --rm composer-service create-project --prefer-dist laravel/laravel .
+```
+
+#### To execute artisan
+
+```bash
+docker compose run --rm artisan-service migrate
+```
+
+#### To install a frontend library
+
+```bash
+docker compose run --rm nodejs-service install bootstrap
+```
+
+#### To re build the custom images
+
+```bash
+docker compose up -d --build
+```
+
+## Session 5
+
+### Containers with node
+
+![alt text](node-ecosystem.png)
+
+![alt text](node-ecosystem2.png)

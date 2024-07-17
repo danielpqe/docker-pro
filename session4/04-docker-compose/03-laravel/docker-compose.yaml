@@ -1,0 +1,50 @@
+services:
+
+#Servicios Principales
+  nginx-service:
+    build:
+      context: .
+      dockerfile: dockerfiles/nginx.dockerfile
+    container_name: nginx-service
+    ports:
+      - "9010:80"
+    depends_on:
+      - php-service
+      - mysql-service
+
+  php-service:
+    build: 
+      context: .
+      dockerfile: dockerfiles/php.dockerfile
+    container_name: php-service
+
+  mysql-service:
+    image: mysql:8
+    container_name: mysql-service
+    env_file:
+      - ./env/mysql.env
+
+#Servicios Utilitarios
+  composer-service:
+    build:
+      context: .
+      dockerfile: dockerfiles/composer.dockerfile
+    volumes:
+      - ./src:/var/www/html
+
+  artisan-service:
+    build:
+      context: .
+      dockerfile: dockerfiles/php.dockerfile
+    volumes:
+      - ./src:/var/www/html
+    entrypoint: ["php", "/var/www/html/artisan"]
+
+  nodejs-service:
+    image: node:16.13.1-alpine
+    working_dir: /var/www/html
+    entrypoint: ["npm"]
+    volumes:
+      - ./src:/var/www/html
+      
+
